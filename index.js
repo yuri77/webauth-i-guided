@@ -61,5 +61,22 @@ server.get("/hash", (req, res) => {
   res.send(`the hash for ${name} is ${hash}`);
 });
 
+function checkCred(req, res, next) {
+  let { username, password } = req.body;
+  Users.findBy({ username })
+    .first()
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+        res.status(200).json({ message: `Welcome ${user.username}!` });
+        next();
+      } else {
+        res.status(401).json({ message: "Invalid Credentials" });
+      }
+    })
+    .catch(error => {
+      res.status(500).json(error);
+    });
+}
+
 const port = process.env.PORT || 5000;
 server.listen(port, () => console.log(`\n** Running on port ${port} **\n`));
